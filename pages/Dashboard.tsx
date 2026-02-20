@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { ProspectCard } from '../components/dashboard/ProspectCard';
 import { Heading, Text } from '../components/design/Typography';
 
+import { Button } from '../components/design/Button';
+
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const { data: prospects = [], isLoading } = useProspects();
@@ -17,7 +19,7 @@ export const Dashboard: React.FC = () => {
   const handleQuickAction = (e: React.MouseEvent, prospect: Prospect, action: 'Shortlist' | 'Archive' | 'Restore') => {
     e.stopPropagation();
     e.preventDefault();
-    
+
     let newStatus = prospect.status;
     if (action === 'Shortlist') newStatus = ProspectStatus.Interesting;
     if (action === 'Archive') newStatus = ProspectStatus.Archived;
@@ -48,23 +50,29 @@ export const Dashboard: React.FC = () => {
         <div>
           <Heading level="h1" font="serif" className="mb-2">{t('dashboard.title')}</Heading>
           <div className="flex gap-4 text-sm font-medium">
-             <button 
-                onClick={() => setFilter('Active')}
-                className={`${filter === 'Active' ? 'text-brand-600 border-b-2 border-brand-500' : 'text-slate-500 hover:text-slate-800'}`}
-             >
-                {t('dashboard.filter.active')} ({prospects.filter(p => p.status !== ProspectStatus.Archived && p.status !== ProspectStatus.Withdrawn).length})
-             </button>
-             <button 
-                onClick={() => setFilter('Archived')}
-                className={`${filter === 'Archived' ? 'text-brand-600 border-b-2 border-brand-500' : 'text-slate-500 hover:text-slate-800'}`}
-             >
-                {t('dashboard.filter.archived')} ({prospects.filter(p => p.status === ProspectStatus.Archived || p.status === ProspectStatus.Withdrawn).length})
-             </button>
+            <button
+              onClick={() => setFilter('Active')}
+              className={`${filter === 'Active' ? 'text-brand-600 border-b-2 border-brand-500' : 'text-slate-500 hover:text-slate-800'} py-2 transition-all`}
+            >
+              {t('dashboard.filter.active')} ({prospects.filter(p => p.status !== ProspectStatus.Archived && p.status !== ProspectStatus.Withdrawn).length})
+            </button>
+            <button
+              onClick={() => setFilter('Archived')}
+              className={`${filter === 'Archived' ? 'text-brand-600 border-b-2 border-brand-500' : 'text-slate-500 hover:text-slate-800'} py-2 transition-all`}
+            >
+              {t('dashboard.filter.archived')} ({prospects.filter(p => p.status === ProspectStatus.Archived || p.status === ProspectStatus.Withdrawn).length})
+            </button>
           </div>
         </div>
-        <Link to="/add" className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-colors shadow-lg shadow-slate-200">
-          <Plus size={18} /> {t('dashboard.addNew')}
-        </Link>
+        <Button
+          as={Link}
+          to="/add"
+          variant="secondary"
+          icon={Plus}
+          className="shadow-lg shadow-slate-200"
+        >
+          {t('dashboard.addNew')}
+        </Button>
       </div>
 
       {filteredProspects.length === 0 ? (
@@ -76,23 +84,23 @@ export const Dashboard: React.FC = () => {
             {filter === 'Active' ? t('dashboard.empty.activeTitle') : t('dashboard.empty.archivedTitle')}
           </Heading>
           <Text color="muted" className="mb-6 max-w-md mx-auto">
-            {filter === 'Active' 
-                ? t('dashboard.empty.activeDesc') 
-                : t('dashboard.empty.archivedDesc')}
+            {filter === 'Active'
+              ? t('dashboard.empty.activeDesc')
+              : t('dashboard.empty.archivedDesc')}
           </Text>
           {filter === 'Active' && (
-              <Link to="/add" className="text-brand-600 font-medium hover:text-brand-700">{t('dashboard.empty.activeCta')} &rarr;</Link>
+            <Link to="/add" className="text-brand-600 font-medium hover:text-brand-700">{t('dashboard.empty.activeCta')} &rarr;</Link>
           )}
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProspects.map((prospect) => (
-             <ProspectCard 
-                key={prospect.id} 
-                prospect={prospect} 
-                filter={filter} 
-                onQuickAction={handleQuickAction} 
-             />
+            <ProspectCard
+              key={prospect.id}
+              prospect={prospect}
+              filter={filter}
+              onQuickAction={handleQuickAction}
+            />
           ))}
         </div>
       )}

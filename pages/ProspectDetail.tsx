@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Layout } from '../components/ui/Layout';
-import { 
+import {
   normalizeUrl,
   extractDomain
 } from '../utils/url';
@@ -26,7 +26,7 @@ export const ProspectDetail: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const { data: prospect, isLoading } = useProspect(id || '');
   const updateProspectMutation = useUpdateProspect();
   const deleteProspectMutation = useDeleteProspect();
@@ -44,12 +44,12 @@ export const ProspectDetail: React.FC = () => {
 
   if (!prospect) return (
     <Layout>
-        <div className="text-center py-20">
-            <Heading level="h2" font="serif" className="mb-4">{t('prospect.notFound')}</Heading>
-            <Link to="/dashboard">
-              <Button variant="link">{t('prospect.returnDashboard')}</Button>
-            </Link>
-        </div>
+      <div className="text-center py-20">
+        <Heading level="h2" font="serif" className="mb-4">{t('prospect.notFound')}</Heading>
+        <Link to="/dashboard">
+          <Button variant="link">{t('prospect.returnDashboard')}</Button>
+        </Link>
+      </div>
     </Layout>
   );
 
@@ -58,8 +58,8 @@ export const ProspectDetail: React.FC = () => {
   };
 
   const handlePartialUpdate = (updatedFields: Partial<Prospect>) => {
-      const updated = { ...prospect, ...updatedFields };
-      handleUpdateProspect(updated);
+    const updated = { ...prospect, ...updatedFields };
+    handleUpdateProspect(updated);
   };
 
   // S03: Deletion
@@ -90,7 +90,7 @@ export const ProspectDetail: React.FC = () => {
       newHistory.push(entry);
     }
     newHistory.sort((a, b) => new Date(a.effectiveAt).getTime() - new Date(b.effectiveAt).getTime());
-    
+
     handlePartialUpdate({ priceHistory: newHistory });
   };
 
@@ -100,49 +100,49 @@ export const ProspectDetail: React.FC = () => {
     const domain = extractDomain(normalized);
 
     const updated = {
-        ...prospect,
-        links: [...prospect.links, {
-            id: crypto.randomUUID(),
-            url: normalized,
-            domain,
-            createdAt: new Date().toISOString()
-        }]
+      ...prospect,
+      links: [...prospect.links, {
+        id: crypto.randomUUID(),
+        url: normalized,
+        domain,
+        createdAt: new Date().toISOString()
+      }]
     };
     handleUpdateProspect(updated);
   };
 
   const handleDeleteLink = (linkId: string) => {
-      const updated = {
-          ...prospect,
-          links: prospect.links.filter(l => l.id !== linkId)
-      };
-      handleUpdateProspect(updated);
+    const updated = {
+      ...prospect,
+      links: prospect.links.filter(l => l.id !== linkId)
+    };
+    handleUpdateProspect(updated);
   };
 
   const handleAddTrait = (text: string, sentiment: 'Positive' | 'Negative') => {
-      const updated = {
-          ...prospect,
-          traits: [...prospect.traits, {
-              id: crypto.randomUUID(),
-              label: text, 
-              text: text,
-              sentiment,
-              createdAt: new Date().toISOString()
-          }]
-      };
-      handleUpdateProspect(updated);
+    const updated = {
+      ...prospect,
+      traits: [...prospect.traits, {
+        id: crypto.randomUUID(),
+        label: text,
+        text: text,
+        sentiment,
+        createdAt: new Date().toISOString()
+      }]
+    };
+    handleUpdateProspect(updated);
   };
 
   const handleDeleteTrait = (traitId: string) => {
-      const updated = {
-          ...prospect,
-          traits: prospect.traits.filter(t => t.id !== traitId)
-      };
-      handleUpdateProspect(updated);
+    const updated = {
+      ...prospect,
+      traits: prospect.traits.filter(t => t.id !== traitId)
+    };
+    handleUpdateProspect(updated);
   };
 
   const handleUpdateNote = (note: string) => {
-      handlePartialUpdate({ note });
+    handlePartialUpdate({ note });
   };
 
   // S14: Configurable Guidance
@@ -150,9 +150,9 @@ export const ProspectDetail: React.FC = () => {
 
   const handleGuidanceAction = () => {
     if (!activeGuidance) return;
-    
+
     if (activeGuidance.id === 'missing_details') {
-        setShowDetailsModal(true);
+      setShowDetailsModal(true);
     } else if (activeGuidance.actionType === 'navigate' && activeGuidance.actionPath) {
       navigate(activeGuidance.actionPath(prospect));
     } else if (activeGuidance.actionType === 'update' && activeGuidance.updatePayload) {
@@ -167,64 +167,69 @@ export const ProspectDetail: React.FC = () => {
         <Link to="/dashboard" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm font-medium transition-colors">
           <ArrowLeft size={16} /> {t('addProspect.backToDashboard')}
         </Link>
-        <button 
-            onClick={() => setShowDeleteModal(true)}
-            className="text-slate-400 hover:text-red-600 text-sm font-sans flex items-center gap-1 transition-colors"
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="text-slate-400 hover:text-red-600 text-sm font-sans flex items-center gap-1 transition-colors"
         >
-            <Trash2 size={14} /> {t('prospect.delete')}
+          <Trash2 size={14} /> {t('prospect.delete')}
         </button>
       </div>
 
       {/* Guidance Banner (S14) - Moved Below Breadcrumb */}
       {activeGuidance && (
-          <div className={`border px-6 py-4 rounded-lg mb-6 flex justify-between items-center shadow-sm animate-in slide-in-from-top-2 ${activeGuidance.priority >= 100 ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-brand-50 border-brand-200 text-brand-900'}`}>
-              <div className="flex items-center gap-3 font-medium">
-                  {activeGuidance.priority >= 100 ? <AlertCircle size={20} className="text-amber-600" /> : <CheckCircle2 size={20} className="text-brand-600" />}
-                  <Text size="lg" className="font-medium">{t(activeGuidance.messageKey)}</Text>
-              </div>
-              {activeGuidance.actionKey && (
-                  <button onClick={handleGuidanceAction} className={`text-sm px-4 py-2 rounded font-medium transition-colors shadow-sm ${activeGuidance.priority >= 100 ? 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50' : 'bg-white text-brand-700 border border-brand-200 hover:bg-brand-50'}`}>
-                      {t(activeGuidance.actionKey)} &rarr;
-                  </button>
-              )}
+        <div className={`border px-6 py-4 rounded-lg mb-6 flex justify-between items-center shadow-sm animate-in slide-in-from-top-2 ${activeGuidance.priority >= 100 ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-brand-50 border-brand-200 text-brand-900'}`}>
+          <div className="flex items-center gap-3 font-medium">
+            {activeGuidance.priority >= 100 ? <AlertCircle size={20} className="text-amber-600" /> : <CheckCircle2 size={20} className="text-brand-600" />}
+            <Text size="lg" className="font-medium">{t(activeGuidance.messageKey)}</Text>
           </div>
+          {activeGuidance.actionKey && (
+            <Button
+              onClick={handleGuidanceAction}
+              variant="ghost"
+              size="sm"
+              className={`font-medium transition-colors shadow-sm ${activeGuidance.priority >= 100 ? 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50' : 'bg-white text-brand-700 border border-brand-200 hover:bg-brand-50'}`}
+            >
+              {t(activeGuidance.actionKey)} &rarr;
+            </Button>
+          )}
+        </div>
       )}
 
       {/* Header Area */}
-      <ProspectHeader 
-        prospect={prospect} 
-        onUpdate={handlePartialUpdate} 
-        onAddPrice={handleAddPrice} 
+      <ProspectHeader
+        prospect={prospect}
+        onUpdate={handlePartialUpdate}
+        onAddPrice={handleAddPrice}
       />
 
       <div className="grid lg:grid-cols-3 gap-8 items-start">
-        
+
         {/* Left Column: Intelligence (Journal & Links & Visits) */}
         <div className="space-y-8">
-            
-            {/* S03: Property Details (Moved to Top) */}
-            <div id="details">
-              <ProspectDetailsCard prospect={prospect} onUpdate={handlePartialUpdate} />
-            </div>
 
-            {/* J03: Visits Section */}
-            <ProspectVisits prospect={prospect} />
+          {/* S03: Property Details (Moved to Top) */}
+          <div id="details">
+            <ProspectDetailsCard prospect={prospect} onUpdate={handlePartialUpdate} onEdit={() => setShowDetailsModal(true)} />
+          </div>
 
-            {/* S04: Listing Link Management */}
-            <ProspectLinks prospect={prospect} onAddLink={handleAddLink} onDeleteLink={handleDeleteLink} />
+          {/* J03: Visits Section */}
+          <ProspectVisits prospect={prospect} />
+
+          {/* S04: Listing Link Management */}
+          <ProspectLinks prospect={prospect} onAddLink={handleAddLink} onDeleteLink={handleDeleteLink} />
         </div>
 
         {/* Middle Column: Evaluation (Pros / Cons) - S07 */}
         <div className="lg:col-span-1 h-fit" id="evaluation">
-             <ProspectEvaluation prospect={prospect} onAddTrait={handleAddTrait} onDeleteTrait={handleDeleteTrait} />
+          <ProspectEvaluation prospect={prospect} onAddTrait={handleAddTrait} onDeleteTrait={handleDeleteTrait} />
         </div>
 
         {/* Right Column: Notes & Financial History */}
         <div className="space-y-6">
-            {/* S03: Note Editing (Journal) - Moved here */}
-            <ProspectJournal prospect={prospect} onUpdate={handleUpdateNote} />
-            
-            <ProspectHistory prospect={prospect} />
+          {/* S03: Note Editing (Journal) - Moved here */}
+          <ProspectJournal prospect={prospect} onUpdate={handleUpdateNote} />
+
+          <ProspectHistory prospect={prospect} />
         </div>
 
       </div>
@@ -241,11 +246,11 @@ export const ProspectDetail: React.FC = () => {
       />
 
       {/* Property Details Wizard Modal */}
-      <PropertyDetailsModal 
-        isOpen={showDetailsModal} 
-        onClose={() => setShowDetailsModal(false)} 
-        prospect={prospect} 
-        onUpdate={handlePartialUpdate} 
+      <PropertyDetailsModal
+        isOpen={showDetailsModal}
+        onClose={() => setShowDetailsModal(false)}
+        prospect={prospect}
+        onUpdate={handlePartialUpdate}
       />
     </Layout>
   );

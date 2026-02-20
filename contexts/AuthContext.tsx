@@ -1,12 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface User {
-  name: string;
-  email: string;
-  picture: string;
-  sub: string;
-}
+import { User } from '../types';
+import { api } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -29,13 +24,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
+      const userData = await api.auth.me();
+      setUser(userData);
     } catch (error) {
       console.error('Failed to check auth', error);
       setUser(null);
@@ -48,15 +38,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // 1. Get the auth URL
       const redirectUri = `${window.location.origin}/auth/callback`;
-      const res = await fetch(`/api/auth/google/url?redirect_uri=${encodeURIComponent(redirectUri)}`);
-      const { url } = await res.json();
+      const { url } = await api.auth.getGoogleUrl(redirectUri);
 
       // 2. Open popup
       const width = 500;
       const height = 600;
       const left = window.screen.width / 2 - width / 2;
       const top = window.screen.height / 2 - height / 2;
-      
+
       const popup = window.open(
         url,
         'google_login',
@@ -71,16 +60,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 3. Listen for success message
       const handleMessage = (event: MessageEvent) => {
         if (event.origin !== window.location.origin) return;
-        
+
         if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
-           // We can use the user data from the message, or fetch it again to be sure
-           // The message payload: { type: '...', user: ... }
-           if (event.data.user) {
-             setUser(event.data.user);
-           } else {
-             checkAuth();
-           }
-           window.removeEventListener('message', handleMessage);
+          if (event.data.user) {
+            setUser(event.data.user);
+          } else {
+            checkAuth();
+          }
+          window.removeEventListener('message', handleMessage);
         }
       };
 
@@ -93,9 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const devLogin = async () => {
     try {
-      const res = await fetch('/api/auth/dev-login', { method: 'POST' });
-      const data = await res.json();
-      setUser(data.user);
+      const { user: userData } = await api.auth.devLogin();
+      setUser(userData);
     } catch (error) {
       console.error('Dev login failed', error);
     }
@@ -103,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await api.auth.logout();
       setUser(null);
       navigate('/');
     } catch (error) {

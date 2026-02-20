@@ -1,4 +1,4 @@
-import { Prospect, CreateProspectDTO, Visit } from '../types';
+import { Prospect, CreateProspectDTO, Visit, User } from '../types';
 import * as storage from './storage';
 
 // Simulate network latency
@@ -7,6 +7,31 @@ const DELAY = 500;
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const api = {
+  auth: {
+    me: async (): Promise<User | null> => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          return data.user;
+        }
+        return null;
+      } catch (error) {
+        return null;
+      }
+    },
+    getGoogleUrl: async (redirectUri: string): Promise<{ url: string }> => {
+      const res = await fetch(`/api/auth/google/url?redirect_uri=${encodeURIComponent(redirectUri)}`);
+      return res.json();
+    },
+    devLogin: async (): Promise<{ user: User }> => {
+      const res = await fetch('/api/auth/dev-login', { method: 'POST' });
+      return res.json();
+    },
+    logout: async (): Promise<void> => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    }
+  },
   prospects: {
     list: async (): Promise<Prospect[]> => {
       await delay(DELAY);
