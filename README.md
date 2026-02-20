@@ -1,11 +1,19 @@
-<div align="center">
+# Keystone Property Manager
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+## Development Guidelines
 
-  <h1>Built with AI Studio</h2>
+### Internationalization (i18n) - MANDATORY
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+**Rule:** All user-facing text **MUST** be internationalized using `react-i18next`.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+*   **Never** hardcode strings in components or pages (e.g., `<h1>Hello</h1>` is forbidden).
+*   **Always** use the `t` function (e.g., `<h1>{t('greeting')}</h1>`).
+*   **Always** add keys to both `locales/en.ts` and `locales/pt.ts`.
+*   **Dates & Numbers:** Use `toLocaleString` with `i18n.language` to format dates and currency.
 
-</div>
+#### Workflow for adding text:
+1.  Identify the text string.
+2.  Create a semantic key (e.g., `prospect.details.rooms`).
+3.  Add the English translation to `locales/en.ts`.
+4.  Add the Portuguese translation to `locales/pt.ts`.
+5.  Use `t('prospect.details.rooms')` in the React component.
